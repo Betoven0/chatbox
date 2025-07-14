@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# ─── MONKEY PATCH para PTB 20.x–21.x ───
+# ─── MONKEY PATCH para PTB 20.x–21.x ──────────────────────────────
 import importlib
 try:
     _upd = importlib.import_module("telegram.ext._updater")
@@ -14,7 +14,7 @@ try:
 except Exception:
     pass
 
-# ─── LIBRERÍAS ───
+# ─── LIBRERÍAS ────────────────────────────────────────────────────
 import os
 import re
 import unicodedata
@@ -28,7 +28,7 @@ from telegram.ext import (
     ContextTypes, filters
 )
 
-# ─── CONFIGURACIÓN ───
+# ─── CONFIGURACIÓN ───────────────────────────────────────────────
 load_dotenv()
 TOKEN    = os.getenv("TELEGRAM_TOKEN")
 CSV_PATH = os.getenv("CSV_PATH")
@@ -39,7 +39,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ─── CARGA DE CSV ───
+# ─── CARGA DE CSV ────────────────────────────────────────────────
 try:
     df = pd.read_csv(CSV_PATH, encoding="latin1")
     logger.info("CSV cargado. Columnas: %s", df.columns.tolist())
@@ -47,7 +47,7 @@ except Exception as e:
     logger.error("Error al leer CSV: %s", e)
     df = pd.DataFrame()
 
-# ─── AYUDANTE DE TEXTO ───
+# ─── AYUDANTE: NORMALIZAR TEXTO ─────────────────────────────────
 def quitar_acentos(texto: str) -> str:
     if not isinstance(texto, str):
         return texto
@@ -55,22 +55,22 @@ def quitar_acentos(texto: str) -> str:
     n = unicodedata.normalize("NFD", texto)
     return "".join(c for c in n if unicodedata.category(c) != "Mn")
 
-# ─── HANDLERS ───
+# ─── HANDLERS ────────────────────────────────────────────────────
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "✏️ Escribe la *matrícula* (dígitos) o el *nombre completo* "
-        "(nombre(s) + paterno + materno) del alumno.",
+        "✏️ Escribe la *matrícula* (solo dígitos) o el *nombre completo* "
+        "(nombre(s) + paterno + materno) del alumno:",
         parse_mode="Markdown"
     )
 
 async def buscar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = update.message.text.strip()
 
-    # 1) Matrícula pura
+    # 1) Busca por matrícula (solo dígitos)
     if texto.isdigit():
         sub = df[df["Matricula"].astype(str).str.strip() == texto]
 
-    # 2) Nombre completo (>= 3 palabras)
+    # 2) Busca por nombre completo (>= 3 palabras)
     else:
         partes = quitar_acentos(texto).lower().split()
         if len(partes) < 3:
@@ -80,12 +80,12 @@ async def buscar(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
 
-        # Separamos materno, paterno y todo lo demás como nombre(s)
+        # Separar dinámicamente nombres, paterno y materno
         materno = partes[-1]
         paterno = partes[-2]
         nombres = " ".join(partes[:-2])
 
-        # Normalizamos columnas
+        # Normalizar columnas
         nombres_norm   = df["Nombre"].astype(str).apply(lambda x: quitar_acentos(x.lower()))
         paternos_norm  = df["Paterno"].astype(str).apply(lambda x: quitar_acentos(x.lower()))
         maternos_norm  = df["Materno"].astype(str).apply(lambda x: quitar_acentos(x.lower()))
@@ -99,13 +99,12 @@ async def buscar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # 2a) Sugerencias si no hay coincidencia exacta
         if sub.empty:
-            # Buscamos por coincidencia parcial (primeras 3 letras)
             mask_sugg = (
                 nombres_norm.str.contains(nombres[:3], na=False) |
                 paternos_norm.str.contains(paterno[:3], na=False) |
                 maternos_norm.str.contains(materno[:3], na=False)
             )
-            candidatos = df[mask_sugg][["Nombre","Paterno","Materno"]].drop_duplicates()
+            candidatos = df[mask_sugg][["Nombre", "Paterno", "Materno"]].drop_duplicates()
             if not candidatos.empty:
                 sugerencias = "\n".join(
                     f"- {r['Nombre']} {r['Paterno']} {r['Materno']}"
@@ -115,11 +114,11 @@ async def buscar(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "❌ No se encontró coincidencia exacta.\n\n"
                     "🔍 Quizás quisiste decir:\n"
                     f"{sugerencias}\n\n"
-                    "✏️ Vuelve a intentar con matrícula o nombre completo.",
+                    "✏️ Intenta de nuevo con matrícula o nombre completo.",
                     parse_mode="Markdown"
                 )
 
-    # 3) Si aún no hay resultados
+    # 3) Si no hay resultados definitivos
     if sub.empty:
         return await update.message.reply_text(
             "❌ No se encontró ningún alumno.\n\n"
@@ -140,8 +139,10 @@ async def buscar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Cuatrimestre: {r.get('Cuatrimestre','N/A')}"
     )
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔢 Ver calificaciones", callback_data=f"grades|{mat}")],
-        [InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")]
+        [
+            InlineKeyboardButton("🔢 Ver calificaciones", callback_data=f"grades|{mat}"),
+            InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")
+        ]
     ])
     await update.message.reply_text(resumen, parse_mode="Markdown", reply_markup=kb)
 
@@ -150,14 +151,14 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
 
-    # Volver al inicio
+    # 1) “Volver al inicio”
     if data == "back":
         return await query.edit_message_text(
-            "✏️ Escribe la *matrícula* o el *nombre completo* del alumno.",
+            "✏️ Escribe la *matrícula* o el *nombre completo* del alumno:",
             parse_mode="Markdown"
         )
 
-    # Extraemos acción y matrícula
+    # 2) Extraer acción y matrícula
     action, mat = data.split("|", 1)
     sub = df[df["Matricula"].astype(str).str.strip() == mat]
     if sub.empty:
@@ -165,7 +166,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     r = sub.iloc[0]
 
-    # Mostrar calificaciones con botón para volver a generales
+    # 3) Mostrar calificaciones
     if action == "grades":
         lines = ["*Calificaciones por materia:*"]
         for _, row in sub.iterrows():
@@ -174,12 +175,14 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lines.append(f"- {matname}: {cal}")
         texto = "\n".join(lines)
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📋 Ver datos generales", callback_data=f"general|{mat}")],
-            [InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")]
+            [
+                InlineKeyboardButton("📋 Ver datos generales", callback_data=f"general|{mat}"),
+                InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")
+            ]
         ])
         return await query.edit_message_text(texto, parse_mode="Markdown", reply_markup=kb)
 
-    # Volver a datos generales
+    # 4) Volver a datos generales
     if action == "general":
         resumen = (
             f"*{r['Nombre']} {r.get('Paterno','')} {r.get('Materno','')}*\n"
@@ -189,12 +192,14 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Cuatrimestre: {r.get('Cuatrimestre','N/A')}"
         )
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔢 Ver calificaciones", callback_data=f"grades|{mat}")],
-            [InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")]
+            [
+                InlineKeyboardButton("🔢 Ver calificaciones", callback_data=f"grades|{mat}"),
+                InlineKeyboardButton("🔄 Consultar otro alumno", callback_data="back")
+            ]
         ])
-        return await query.edit_message.reply_text(resumen, parse_mode="Markdown", reply_markup=kb)
+        return await query.edit_message_text(resumen, parse_mode="Markdown", reply_markup=kb)
 
-# ─── MAIN ───
+# ─── EJECUCIÓN ────────────────────────────────────────────────────
 def main():
     app = (
         Application.builder()
@@ -203,6 +208,7 @@ def main():
         .write_timeout(30)
         .build()
     )
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, buscar))
     app.add_handler(CallbackQueryHandler(callback_handler))

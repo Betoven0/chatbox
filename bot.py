@@ -91,34 +91,57 @@ def buscar_info(texto: str) -> str:
 # ────────────────────────────────────────────────────────────────
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Muestra menú inicial como respuesta a /start."""
-    if df.empty:
-        return await update.message.reply_text("⚠️ No hay datos para mostrar.")
+    """Inicio: pedir matrícula directamente"""
+    await update.message.reply_text("✏️ Escribe la *matrícula* del alumno que deseas consultar.", parse_mode="Markdown")
 
-    buttons = [
-        [InlineKeyboardButton(n, callback_data=f"al__{n}")]
-        for n in df["Nombre"].unique()
-    ]
-    buttons.append([InlineKeyboardButton("🔄 Otro alumno", callback_data="back")])
-    kb = InlineKeyboardMarkup(buttons)
+async def buscar_matricula(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Busca alumno por matrícula ingresada en texto"""
+    matricula = update.message.text.strip()
+    sub = df[df["Matricula"].astype(str).str.strip() == matricula]
+    if sub.empty:
+        return await update.message.reply_text("❌ Matrícula no encontrada.")
 
-    await update.message.reply_text("👋 Selecciona un alumno:", reply_markup=kb)
+    r = sub.iloc[0]
+    context.user_data["matricula"] = matricula
 
+    resumen = (
+        f"*{r['Nombre']} {r.get('Paterno','')} {r.get('Materno','')}*\n"
+        f"Carrera: {r.get('Carrera','N/A')}\n"
+        f"Matrícula: {r.get('Matricula','N/A')}\n"
+        f"Promedio general: {r.get('Calificacion','N/A')}\n"
+        f"Cuatrimestre: {r.get('Cuatrimestre','N/A')}\n"
+    )
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔢 Ver calificaciones", callback_data="grades")],
+        [InlineKeyboardButton("🔄 Consultar otra matrícula", callback_data="back")]
+    ])
+    await update.message.reply_text(resumen, parse_mode="Markdown", reply_markup=kb)
 
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Maneja todos los callback_data."""
     query = update.callback_query
-    data  = query.data
     await query.answer()
+    matricula = context.user_data.get("matricula", "")
+    sub = df[df["Matricula"].astype(str).str.strip() == matricula]
 
-    # --- 1) Datos generales ---
-    if data.startswith("al__"):
-        nombre = data.split("al__", 1)[1]
-        sub    = df[df["Nombre"] == nombre]
-        if sub.empty:
-            return await query.edit_message_text("❌ Alumno no encontrado.")
+    if sub.empty:
+        return await query.edit_message_text("❌ Matrícula no encontrada.")
 
-        r = sub.iloc[0]
+    r = sub.iloc[0]
+
+    if query.data == "grades":
+        lines = ["*Calificaciones por materia:*"]
+        for _, row in sub.iterrows():
+            mat = row.get("Materia", "N/A")
+            cal = row.get("Calificacion", "N/A")
+            lines.append(f"- {mat}: {cal}")
+        texto = "\n".join(lines)
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📋 Ver datos generales", callback_data="general")],
+            [InlineKeyboardButton("🔄 Consultar otra matrícula", callback_data="back")]
+        ])
+        return await query.edit_message_text(texto, parse_mode="Markdown", reply_markup=kb)
+
+    elif query.data == "general":
         resumen = (
             f"*{r['Nombre']} {r.get('Paterno','')} {r.get('Materno','')}*\n"
             f"Carrera: {r.get('Carrera','N/A')}\n"
@@ -127,50 +150,13 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Cuatrimestre: {r.get('Cuatrimestre','N/A')}\n"
         )
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔢 Ver calificaciones", callback_data=f"grades__{nombre}")],
-            [InlineKeyboardButton("🔄 Otro alumno",         callback_data="back")]
+            [InlineKeyboardButton("🔢 Ver calificaciones", callback_data="grades")],
+            [InlineKeyboardButton("🔄 Consultar otra matrícula", callback_data="back")]
         ])
         return await query.edit_message_text(resumen, parse_mode="Markdown", reply_markup=kb)
 
-    # --- 2) Calificaciones por materia ---
-    if data.startswith("grades__"):
-        nombre = data.split("grades__", 1)[1]
-        sub    = df[df["Nombre"] == nombre]
-        if sub.empty:
-            return await query.edit_message_text("❌ Alumno no encontrado.")
-
-        lines = ["*Calificaciones por materia:*"]
-        for _, row in sub.iterrows():
-            mat = row.get("Materia","N/A")
-            cal = row.get("Calificacion","N/A")
-            lines.append(f"- {mat}: {cal}")
-        texto = "\n".join(lines)
-
-        kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📋 Ver datos generales", callback_data=f"al__{nombre}")],
-            [InlineKeyboardButton("🔄 Otro alumno",           callback_data="back")]
-        ])
-        return await query.edit_message_text(texto, parse_mode="Markdown", reply_markup=kb)
-
-    # --- 3) Volver al menú inicial sin usar update.message ---
-    if data == "back":
-        buttons = [
-            [InlineKeyboardButton(n, callback_data=f"al__{n}")]
-            for n in df["Nombre"].unique()
-        ]
-        buttons.append([InlineKeyboardButton("🔄 Otro alumno", callback_data="back")])
-        kb = InlineKeyboardMarkup(buttons)
-
-        return await query.edit_message_text("👋 Selecciona un alumno:", reply_markup=kb)
-
-
-async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Búsqueda libre por mensaje de texto."""
-    respuesta = buscar_info(update.message.text)
-    MAX       = 4000
-    for i in range(0, len(respuesta), MAX):
-        await update.message.reply_text(respuesta[i : i + MAX])
-
+    elif query.data == "back":
+        return await query.edit_message_text("✏️ Escribe la *matrícula* del alumno que deseas consultar.", parse_mode="Markdown")
 
 # ────────────────────────────────────────────────────────────────
 # 5. MAIN
@@ -185,11 +171,8 @@ def main():
     )
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, buscar_matricula))
     app.add_handler(CallbackQueryHandler(callback_handler))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text))
 
     logger.info("Bot arrancado correctamente.")
     app.run_polling()
-
-if __name__ == "__main__":
-    main()

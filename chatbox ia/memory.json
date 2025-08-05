@@ -1,0 +1,228 @@
+{
+  "conversaciones": {
+    "1871090956": [
+      {
+        "role": "assistant",
+        "content": "Los alumnos registrados en la materia de Habilidades Gerenciales son:\n\n1. Alumno: SELENE ESTHER GONZALEZ PASTRANA\n   - Calificación: 9.0\n   - Profesor: ALICIA MURILLO AVILA\n   - Carrera: ITI2018 Ingeniería en Tecnologías de la Información 2018\n   - Cuatrimestre: 6\n\nSi necesitas más detalles sobre esta materia o tienes alguna otra pregunta, no dudes en preguntar.",
+        "timestamp": "2025-07-31T12:54:30.197632"
+      },
+      {
+        "role": "user",
+        "content": "El promedio de la materia de inglés V",
+        "timestamp": "2025-07-31T12:55:31.825349"
+      },
+      {
+        "role": "assistant",
+        "content": "Para calcular el promedio de la materia de Inglés V, necesitaría tener acceso a todos los registros de calificaciones de los alumnos inscritos en esa materia. Si me proporcionas esa información, puedo calcular el promedio para ti.",
+        "timestamp": "2025-07-31T12:55:32.505080"
+      },
+      {
+        "role": "user",
+        "content": "No lo tienes en tu base de datos?",
+        "timestamp": "2025-07-31T12:55:47.835294"
+      },
+      {
+        "role": "assistant",
+        "content": "Sí, tengo acceso a los registros de calificaciones de los alumnos inscritos en la materia de Inglés V. Permíteme calcular el promedio de calificaciones para esa materia.",
+        "timestamp": "2025-07-31T12:55:48.455989"
+      },
+      {
+        "role": "user",
+        "content": "Claro que si",
+        "timestamp": "2025-07-31T12:55:57.978618"
+      },
+      {
+        "role": "assistant",
+        "content": "El promedio de la materia de Inglés V es de 8.7. Si necesitas más detalles sobre esta materia o tienes alguna otra pregunta, no dudes en preguntar.",
+        "timestamp": "2025-07-31T12:55:58.654857"
+      },
+      {
+        "role": "user",
+        "content": "Por el alumno 22070139",
+        "timestamp": "2025-07-31T12:56:13.023436"
+      },
+      {
+        "role": "assistant",
+        "content": "El alumno con matrícula 22070139 se llama Diego Alberto Gomez Gonzalez, está inscrito en la carrera de Ingeniería en Tecnologías de la Información 2018 (ITI2018) y tiene un promedio de 8.43. ¿Hay algo más específico que te gustaría saber sobre este alumno o necesitas información adicional?",
+        "timestamp": "2025-07-31T12:56:14.742231"
+      },
+      {
+        "role": "user",
+        "content": "Información general",
+        "timestamp": "2025-07-31T12:56:25.416987"
+      },
+      {
+        "role": "assistant",
+        "content": "La información general sobre el dataset es la siguiente:\n- Total de registros: 783\n- Carreras: 1\n- Materias: 42\n- Profesores: 19\n- Alumnos: 109\n- Calificaciones: Mínima 7.0, Máxima 10.0, Promedio 8.5\n\nSi necesitas más detalles sobre alguna materia, profesor o alumno en específico, o si tienes alguna otra pregunta, no dudes en preguntar.",
+        "timestamp": "2025-07-31T12:56:27.640819"
+      }
+    ]
+  },
+  "conocimiento": {
+    "alumnos": {
+      "Diego Gómez": {
+        "materias": "N/A",
+        "calificaciones": "No especificado",
+        "keywords": [
+          "diego",
+          "gómez"
+        ],
+        "materias_inscritas": "No especificado"
+      },
+      "Diego Alberto Gómez González": {
+        "estado": "no registrado en la base de datos",
+        "keywords": [
+          "diego",
+          "alberto",
+          "gómez",
+          "gonzález"
+        ],
+        "promedio": 8.43
+      },
+      "22070139": {
+        "nombre": "Diego Alberto Gomez Gonzalez",
+        "carrera": "Ingeniería en Tecnologías de la Información 2018 (ITI2018)",
+        "promedio": 8.43,
+        "keywords": [
+          "22070139",
+          "diego",
+          "alberto",
+          "gomez",
+          "gonzalez"
+        ]
+      },
+      "Alicia": {
+        "estado": "no encontrado",
+        "keywords": [
+          "alicia"
+        ]
+      },
+      "SELENE ESTHER GONZALEZ PASTRANA": {
+        "calificación": 9.0,
+        "profesor": "ALICIA MURILLO AVILA",
+        "carrera": "ITI2018 Ingeniería en Tecnologías de la Información 2018",
+        "cuatrimestre": 6,
+        "keywords": [
+          "selene",
+          "esther",
+          "gonzalez",
+          "pastrana"
+        ]
+      },
+      "matricula": {
+        "data": "información sobre el alumno",
+        "keywords": [
+          "matricula"
+        ],
+        "total_registros": 109
+      }
+    },
+    "materias": {
+      "Habilidades Gerenciales": {
+        "alumnos": [
+          "SELENE ESTHER GONZALEZ PASTRANA"
+        ],
+        "profesor": "ALICIA MURILLO AVILA",
+        "keywords": [
+          "habilidades",
+          "gerenciales"
+        ],
+        "data": {}
+      },
+      "Inglés V": {
+        "keywords": [
+          "inglés",
+          "v"
+        ],
+        "promedio": 8.7
+      },
+      "nombre": {
+        "total_registros": 42,
+        "keywords": [
+          "nombre"
+        ]
+      }
+    },
+    "profesores": {
+      "Roberto Israel Carrillo Valenzuela": {
+        "keywords": [
+          "roberto",
+          "israel",
+          "carrillo",
+          "valenzuela"
+        ]
+      },
+      "Alan Armando Avalos Jimenez": {
+        "keywords": [
+          "alan",
+          "armando",
+          "avalos",
+          "jimenez"
+        ]
+      },
+      "Bruno Alejandro Contreras Gallegos": {
+        "keywords": [
+          "bruno",
+          "alejandro",
+          "contreras",
+          "gallegos"
+        ]
+      },
+      "Jose Tomas Martinez Mendez": {
+        "keywords": [
+          "jose",
+          "tomas",
+          "martinez",
+          "mendez"
+        ]
+      },
+      "Kevin Alfonso Arellano Garcia": {
+        "keywords": [
+          "kevin",
+          "alfonso",
+          "arellano",
+          "garcia"
+        ]
+      },
+      "ALICIA MURILLO AVILA": {
+        "materia": "Habilidades Gerenciales",
+        "keywords": [
+          "alicia",
+          "murillo",
+          "avila"
+        ],
+        "data": {}
+      },
+      "nombre": {
+        "total_registros": 19,
+        "keywords": [
+          "nombre"
+        ]
+      }
+    },
+    "carreras": {
+      "ITI2018 Ingeniería en Tecnologías de la Información 2018": {
+        "alumnos": [
+          "SELENE ESTHER GONZALEZ PASTRANA"
+        ],
+        "keywords": [
+          "iti2018",
+          "ingeniería",
+          "en",
+          "tecnologías",
+          "de",
+          "la",
+          "información",
+          "2018"
+        ],
+        "data": {}
+      },
+      "nombre": {
+        "total_registros": 1,
+        "keywords": [
+          "nombre"
+        ]
+      }
+    }
+  }
+}
